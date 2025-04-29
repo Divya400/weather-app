@@ -4,7 +4,7 @@ import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import ForecastList from "./components/ForecastList";
 import ErrorMessage from "./components/ErrorMessage";
-import WeatherMap from "./components/WeatherMap"; // Ensure this is imported
+import WeatherMap from "./components/WeatherMap";
 import './App.css';
 
 function App() {
@@ -37,50 +37,16 @@ function App() {
     const loadWeather = async () => {
       try {
         setError(null); // Clear previous errors
-        console.log("Fetching weather for:", city, "with unit:", unit);
         const weather = await fetchWeather(city, unit); // Fetch current weather
         const forecast = await fetchForecast(city, unit); // Fetch 5-day forecast
-        console.log("Weather data:", weather);
-        console.log("Forecast data:", forecast);
         setWeatherData(weather);
         setForecastData(forecast);
       } catch (err) {
-        console.error("Error fetching weather data:", err.message);
         setError(err.message); // Set error message if API call fails
       }
     };
     loadWeather();
-  }, [city, unit]);
-
-  // Fetch weather for user's current location
-  const fetchCurrentLocationWeather = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("Current location:", latitude, longitude);
-          try {
-            setError(null);
-            const weather = await fetchWeather(`${latitude},${longitude}`, unit);
-            const forecast = await fetchForecast(`${latitude},${longitude}`, unit);
-            console.log("Weather data for current location:", weather);
-            setWeatherData(weather);
-            setForecastData(forecast);
-          } catch (err) {
-            console.error("Error fetching weather for current location:", err.message);
-            setError("Unable to fetch weather for your location.");
-          }
-        },
-        (error) => {
-          console.error("Geolocation error:", error.message);
-          setError("Geolocation permission denied.");
-        }
-      );
-    } else {
-      console.error("Geolocation not supported by browser.");
-      setError("Geolocation is not supported by your browser.");
-    }
-  };
+  }, [city, unit]); // Dependency array includes city and unit
 
   return (
     <div
@@ -103,16 +69,12 @@ function App() {
       <button onClick={toggleUnit} style={{ marginBottom: "1rem" }}>
         Switch to {unit === "metric" ? "Fahrenheit" : "Celsius"}
       </button>
-      {/* Button to fetch current location weather */}
-      <button onClick={fetchCurrentLocationWeather} style={{ marginBottom: "1rem" }}>
-        Get Current Location Weather
-      </button>
       {/* Display error message if any */}
       {error && <ErrorMessage message={error} />}
       {/* Display current weather data */}
-      {weatherData && <WeatherCard weatherData={weatherData} />}
+      {weatherData && <WeatherCard weatherData={weatherData} unit={unit} />}
       {/* Display 5-day forecast */}
-      {forecastData && <ForecastList forecastData={forecastData} />}
+      {forecastData && <ForecastList forecastData={forecastData} unit={unit} />}
       {/* Display map view */}
       {weatherData && (
         <WeatherMap
